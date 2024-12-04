@@ -27,22 +27,32 @@ class DatabaseHelper {
     ''');
   }
 
-  // Insert a new task
   Future<void> insertTask(TodoItem item) async {
-    var db = await database;
-    await db.insert('todo', item.toMap());
+    try {
+      var db = await database;
+      await db.insert('todo', item.toMap());
+    } catch (e) {
+      print("Error inserting task: $e");
+    }
   }
 
-  // Get all tasks
   Future<List<TodoItem>> getTasks() async {
-    var db = await database;
-    var result = await db.query('todo');
-    return result.map((map) => TodoItem.fromMap(map)).toList();
+    try {
+      var db = await database;
+      var result = await db.query('todo');
+      return result.map((map) => TodoItem.fromMap(map)).toList();
+    } catch (e) {
+      print("Error fetching tasks: $e");
+      return [];
+    }
   }
 
-  // Delete a task
   Future<void> deleteTask(int id) async {
-    var db = await database;
-    await db.delete('todo', where: 'id = ?', whereArgs: [id]);
+    try {
+      var db = await database;
+      await db.delete('todo', where: 'id = ?', whereArgs: [id]);
+    } catch (e) {
+      print("Error deleting task: $e");
+    }
   }
 }

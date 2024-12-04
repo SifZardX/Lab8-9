@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'todo_item.dart';
 import 'database_helper.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  // Initialize sqflite for FFI platforms (Windows, Linux, macOS)
+  if (defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux ||
+      defaultTargetPlatform == TargetPlatform.macOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi; // Initialize the database factory for FFI
+  }
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -34,23 +46,41 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadTasks() async {
-    var tasks = await _dbHelper.getTasks();
-    setState(() {
-      _tasks = tasks;
-    });
-  }
-
-  void _addTask() {
-    if (_taskController.text.isNotEmpty) {
-      _dbHelper.insertTask(TodoItem(task: _taskController.text.trim()));
-      _loadTasks();
-      _taskController.clear();
+    try {
+      var tasks = await _dbHelper.getTasks();
+      setState(() {
+        _tasks = tasks;
+      });
+    } catch (e) {
+      print("Error loading tasks: $e");
     }
   }
 
-  void _deleteTask(int id) {
-    _dbHelper.deleteTask(id);
-    _loadTasks();
+  void _addTask() async {
+    if (_taskController.text.isNotEmpty) {
+      try {
+        await _dbHelper.insertTask(TodoItem(task: _taskController.text.trim()));
+        _loadTasks();
+        _taskController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Task added!')),
+        );
+      } catch (e) {
+        print("Error adding task: $e");
+      }
+    }
+  }
+
+  void _deleteTask(int id) async {
+    try {
+      await _dbHelper.deleteTask(id);
+      _loadTasks();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Task deleted!')),
+      );
+    } catch (e) {
+      print("Error deleting task: $e");
+    }
   }
 
   @override
@@ -77,10 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final task = _tasks[index];
                 return ListTile(
                   title: Text(task.task),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => _deleteTask(task.id!),
-                  ),
+                  onLongPress: () => _deleteTask(task.id!),
                 );
               },
             ),

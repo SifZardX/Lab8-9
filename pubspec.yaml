@@ -1,6 +1,6 @@
 name: lab02
 description: "A new Flutter project."
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -13,7 +13,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.3.2
   sqflite: ^2.0.0+4
-  path_provider: ^2.0.11 # Added path_provider dependency
+  sqflite_common_ffi: ^2.0.0+1  # Corrected this line
+  path_provider: ^2.0.11
 
 dev_dependencies:
   flutter_test:
@@ -23,4 +24,3 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Add your assets section here
